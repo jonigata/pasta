@@ -20,7 +20,6 @@
 #include "renderer.hpp"
 #include "trapezoidal_map.hpp"
 #include "water.hpp"
-#include "sph.hpp"
 #include "gci.hpp"
 
 ////////////////////////////////////////////////////////////////
