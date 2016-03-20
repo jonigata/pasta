@@ -2,17 +2,17 @@
 
 /*!
 	@file	  sph.hpp
-	@brief	  <ŠT—v>
+	@brief	  <æ¦‚è¦>
 
-	<à–¾>
+	<èª¬æ˜>
 */
 
 #ifndef SPH_HPP_
 #define SPH_HPP_
 
-// ’·‚³ mm
-// ¿—Ê g
-// ŠÔ s
+// é•·ã• mm
+// è³ªé‡ g
+// æ™‚é–“ s
 
 namespace sph {
 
@@ -138,8 +138,8 @@ public:
         real_type pressure_repulsive_coefficient) {
         C_ = 0;
 
-        // radius‚ª1.0‚É‚È‚é‚æ‚¤‚Éƒpƒ‰ƒ[ƒ^‚ğ³‹K‰»
-        //(9˜©‚µ‚Ä‚¢‚é‚Æ‚±‚ë‚Æ‚©‚ ‚é‚Ì‚Å)
+        // radiusãŒ1.0ã«ãªã‚‹ã‚ˆã†ã«ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’æ­£è¦åŒ–
+        //(9ä¹˜ã—ã¦ã„ã‚‹ã¨ã“ã‚ã¨ã‹ã‚ã‚‹ã®ã§)
         src_search_radius_ = search_radius;
         viscosity_ = viscosity;
         dumping_ = dumping;
@@ -149,7 +149,7 @@ public:
         pressure_repulsive_coefficient_ = pressure_repulsive_coefficient;
     }
 
-    void add_particle(const vector_type& v, real_type mass) {
+    void add_particle(const vector_type& v, real_type mass, load_type load) {
         Particle p;
         p.new_position = v / src_search_radius_;
         p.old_position = p.new_position;
@@ -158,6 +158,7 @@ public:
         p.density_balance = ideal_density_;
         p.density_repulsive = ideal_density_;
         p.move = Traits::zero_vector();
+        p.load = load;
         particles_.push_back(p);
     }
 
@@ -213,7 +214,8 @@ public:
     void update(real_type dt) {
         C_ = 0;
 
-        real_type idt = real_type(1.0)/ dt;
+        real_type idt = real_type(1.0) / dt;
+        real_type i_src_search_radius = real_type(1.0) / src_search_radius_;
 
         // verlet integration
         for (size_t i = 0 ; i <particles_.size(); i++) {
@@ -222,6 +224,10 @@ public:
             // use previous position to compute next velocity
             vector_type vdt = p.new_position - p.old_position;
             vector_type v = vdt * idt;
+
+            p.new_position += 
+                Traits::move(p.load, p.new_position * src_search_radius_) * 
+                i_src_search_radius * dt;
 
             // save previous position
             p.old_position = p.new_position;
@@ -232,6 +238,10 @@ public:
             v += a;
             real_type speed = Traits::length(vdt);
             C_ =(std::max)(speed, C_);
+
+            v = Traits::constraint_velocity(
+                p.load, 
+                v * src_search_radius_) * i_src_search_radius;
 
             // advance to predicted position
             p.new_position += v * dt * dumping_;

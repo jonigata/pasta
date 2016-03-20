@@ -15,6 +15,11 @@
 #include "gci.hpp"
 #include "pathview.hpp"
 #include "color.hpp"
+#include "standard_partawn.hpp"
+#include <memory>
+
+const int HCOUNT				   = 10;
+const int VCOUNT				   = 10;
 
 class Board {
 public:
@@ -25,6 +30,7 @@ public:
     void setup() {
         read_gci("data/cave.gci", terrain_);
         compile_terrain(terrain());
+        // mockup();
         ready_ = true;
     }
 
@@ -41,6 +47,14 @@ public:
     }
 
     Water& water() { return water_; }
+
+public: 
+    // player operation
+    void settle_partawn(const Vector& v, const Vector& target) {
+        auto p = std::make_shared<StandardPartawn>(target, 25.0f);
+        partawns_.push_back(p);
+        water_.add(v, MASS, p.get());
+    }
     
 public:
     struct SegmentProperty {
@@ -299,7 +313,20 @@ private:
         pb.push_back(p);
     }
 
+    std::vector<std::shared_ptr<IPartawn>> partawns_;
 
+private:
+    void mockup() {
+        for (int y = 0 ; y <VCOUNT ; y++) {
+            for (int x = 0 ; x <HCOUNT ; x++) {
+                water_.add(
+                    Vector(256.0f, 256.0f)+ 
+                    Vector(float(-HCOUNT/2+x), float(-VCOUNT/2+y))*INITIAL_DISTANCE,
+                    MASS,
+                    nullptr);
+            }
+        }
+    }
 
 };
 

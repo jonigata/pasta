@@ -18,6 +18,7 @@
 #include "board.hpp"
 #include "board_renderer.hpp"
 #include "gci.hpp"
+#include "player.hpp"
 
 ////////////////////////////////////////////////////////////////
 // main window
@@ -37,7 +38,7 @@ class application
     typedef window_user<application, window_type> window_user_type;
 
 public:
-    application() : board_renderer_(board_) {
+    application() : board_renderer_(board_), player_(board_) {
         auto_update_ = false;
         click_ = false;
 
@@ -63,6 +64,15 @@ public:
 
     void accept(zw::win::event::mouse& m) {
         window_user_type::accept(m);
+
+        if (m.lbutton) {
+            if (!dragging_) {
+                dragging_ = true;
+                player_.tap(Vector(m.position.dx(), m.position.dy()));
+            }
+        } else {
+            dragging_ = false;
+        }
     }
 
     void accept(zw::win::event::keychar& m) {
@@ -103,6 +113,7 @@ private:
 
     Board board_;
     BoardRenderer board_renderer_;
+    Player player_;
 
 };
 

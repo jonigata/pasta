@@ -27,10 +27,7 @@ public:
             device,
             board_.terrain_primitives(), 
             board_.terrain_primitives().size());
-        board_.water().render(
-            device,
-            D3DXVECTOR2(0, 0),
-            1.0f);
+        board_.water().render(device);
     }
 
 private:

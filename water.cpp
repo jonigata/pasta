@@ -7,20 +7,19 @@
 const float DISPLAY_MAG			   = 1.0f;
 const float DOT_SIZE			   = 9.0f;
 
+namespace {
+
 class Renderer {
 public:
     typedef zw::fvf::vertex<D3DFVF_XYZRHW|D3DFVF_DIFFUSE> vertex_type;
 
 public:
-    Renderer(vertex_type* v, const D3DXVECTOR2& o, float z)
-        : vertices(v), offset(o), zoom(z) {
+    Renderer(vertex_type* v) : vertices(v) {
     }
     vertex_type* vertices;
-    D3DXVECTOR2 offset;
-    float zoom;
 
     D3DXVECTOR2 offmag(const D3DXVECTOR2& v) {
-        return v *(DISPLAY_MAG* float(zoom))- offset;
+        return v *(DISPLAY_MAG);
     }
 
     void operator()(
@@ -31,17 +30,17 @@ public:
         float    density_balance_corrected,
         float    density_repulsive_corrected,
         float    boundariness,
-        const SPH_Traits_D3DX_2D::load_type& load) {
+        const WaterTraits::load_type& load) {
         DWORD c;
         int cc = boundariness <1.0f ? 16 : 255;
         if (255 <cc) { cc = 255; }
         //cc = 255;
         c = D3DCOLOR_ARGB(64, cc, 0, 255);
 
-        D3DXVECTOR2 sx(DOT_SIZE * zoom, 0);
-        D3DXVECTOR2 sy(0, DOT_SIZE * zoom);
-        D3DXVECTOR2 sxy(DOT_SIZE * zoom, DOT_SIZE * zoom);
-        D3DXVECTOR2 pos2 = pos - sxy * 0.5f;
+        Vector sx(DOT_SIZE, 0);
+        Vector sy(0, DOT_SIZE);
+        Vector sxy(DOT_SIZE, DOT_SIZE);
+        Vector pos2 = pos - sxy * 0.5f;
 
         vertices[0].p = v4(offmag(pos2));
         vertices[1].p = v4(offmag(pos2)+ sx);
@@ -60,7 +59,7 @@ public:
     void render_frame() {
     }
 
-    D3DXVECTOR4 v4(const D3DXVECTOR2& v) {
+    D3DXVECTOR4 v4(const Vector& v) {
         return D3DXVECTOR4(v.x, v.y, 0, 1);
     }
 };
@@ -71,13 +70,13 @@ struct RendererWrapper {
 
     void operator()(
         int     id,
-        const D3DXVECTOR2& pos,
+        const Vector& pos,
         float    mass,
         float    density_plain,
         float    density_balance_corrected,
         float    density_repulsive_corrected,
         float    boundariness,
-        const SPH_Traits_D3DX_2D::load_type& load) {
+        const WaterTraits::load_type& load) {
         r(
             id,
             pos,
@@ -89,6 +88,8 @@ struct RendererWrapper {
             load);
     }
 };
+
+}
 
 
 /*============================================================================
@@ -109,33 +110,26 @@ Water::Water() {
         SEARCH_RADIUS,
         VISCOSITY,
         DUMPING,
-        D3DXVECTOR2(0, GRAVITY),
+        Vector(0, GRAVITY),
         IDEAL_DENSITY,
         PRESSURE_BALANCE_COEFFICIENT,
         PRESSURE_REPULSIVE_COEFFICIENT);
-
-    for (int y = 0 ; y <VCOUNT ; y++) {
-        for (int x = 0 ; x <HCOUNT ; x++) {
-            sph_.add_particle(
-                D3DXVECTOR2(256.0f, 256.0f)+ 
-                D3DXVECTOR2(float(-HCOUNT/2+x), float(-VCOUNT/2+y))*
-                INITIAL_DISTANCE,
-                MASS);
-        }
-    }
 }
 
 //****************************************************************
 // render
-void Water::render(
-    LPDIRECT3DDEVICE9 device,
-    const D3DXVECTOR2& offset,
-    float    zoom) {
+void Water::add(const Vector& v, float mass, IPartawn* partawn) {
+    sph_.add_particle(v, mass, partawn);
+}
+
+//****************************************************************
+// render
+void Water::render(LPDIRECT3DDEVICE9 device) {
     typedef Renderer::vertex_type vertex_type;
 
     static vertex_type vertices[32768];
 
-    Renderer r(vertices, offset, zoom);
+    Renderer r(vertices);
     sph_.foreach(RendererWrapper(r));
 
     device->SetRenderState(D3DRS_LIGHTING, FALSE);
@@ -167,7 +161,7 @@ void Water::update() {
     struct ApplyConstraint {
         ApplyConstraint(IConstraint* c) : c_(c) {}
         IConstraint* c_;
-        D3DXVECTOR2 operator()(const D3DXVECTOR2& v) const {
+        Vector operator()(const Vector& v) const {
             return c_->apply(v);
         }
     };

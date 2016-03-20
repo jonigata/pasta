@@ -13,13 +13,11 @@
 #include "zw/d3dfvf.hpp"
 #include <boost/ref.hpp>
 #include "sph.hpp"
-
-const int HCOUNT				   = 10;
-const int VCOUNT				   = 10;
+#include "vector.hpp"
 
 const float INITIAL_DISTANCE	   = 10.0f;	// 1cm(10mm)ŠÔŠu‚ÌŠiŽq‚ðì‚é
 const float DT                     = 0.01f;	// 100ƒtƒŒ[ƒ€/s
-const float SEARCH_RADIUS          = 50.0f;	// 5cm(50mm)‚ÌŒŸõ”ÍˆÍ
+const float SEARCH_RADIUS          = INITIAL_DISTANCE;
 const float VISCOSITY              = 1.0f;
 const float DUMPING                = 0.99f;
 const float GRAVITY                = 0.0f;	// mm/(s*s)
@@ -32,7 +30,67 @@ class IConstraint {
 public:
     virtual ~IConstraint() {}
 
-    virtual D3DXVECTOR2 apply(const D3DXVECTOR2&) = 0;
+    virtual Vector apply(const Vector&) = 0;
+};
+
+class IPartawn {
+public:
+    virtual ~IPartawn() {}
+
+    virtual Vector constraint_velocity(const Vector&) = 0;
+    virtual Vector move(const Vector&) = 0;
+};
+
+struct WaterTraits {
+    typedef float  real_type;
+    typedef Vector vector_type;
+    typedef IPartawn* load_type;
+    enum { DIMENSION = 2 };
+
+    static real_type epsilon() {
+        return 1.0e-6f;
+    }
+    static vector_type zero_vector() {
+        return vector_type(0.0f, 0.0f);
+    }
+    static vector_type unit_vector() {
+        return vector_type(1.0f, 1.0f);
+    }
+    static real_type length(const vector_type& v) {
+        return D3DXVec2Length(&v);
+    }
+    static real_type length_sq(const vector_type& v) {
+        return D3DXVec2LengthSq(&v);
+    }
+
+    static int coord(real_type n) {
+        return int(floor(n));
+    }
+    static void make_coords(int a[2], const vector_type& v) {
+        a[0] = coord(v.x);
+        a[1] = coord(v.y);
+    }
+    static void make_vector(vector_type& v, const real_type a[2]) {
+        v.x = a[0];
+        v.y = a[1];
+    }
+    static int hash(const int a[2], int table_size) {
+        // large prime numbers
+        const int p1 = 73856093;
+        const int p2 = 19349663;
+
+        return size_t((a[0] * p1)^(a[1] * p2))% table_size;
+    }
+    static Vector constraint_velocity(
+        const load_type& load, const vector_type& v) {
+        if (load == nullptr) { return v; }
+        return load->constraint_velocity(v);
+    }
+    static Vector move(const load_type& load, const vector_type& p) {
+        if (load == nullptr) { return p; }
+        return load->move(p);
+    }
+
 };
 
 
@@ -41,12 +99,11 @@ public:
     Water();
     ~Water() {}
 
-    void render(
-        LPDIRECT3DDEVICE9 device,
-        const D3DXVECTOR2& offset,
-        float zoom);
+    void add(const Vector& v, float mass, IPartawn* partawn);
 
-    void click(D3DXVECTOR2& p) {}
+    void render(LPDIRECT3DDEVICE9 device);
+
+    void click(Vector& p) {}
     void update();
 
     void  set_viscosity(float);
@@ -59,9 +116,7 @@ public:
     void  set_constraint(IConstraint* constraint);
 
 private:
-    sph::sph<SPH_Traits_D3DX_2D> sph_;
-    D3DXVECTOR2      case_offset_;
-    D3DXVECTOR2      tmp_case_offset_;
+    sph::sph<WaterTraits> sph_;
     IConstraint*     constraint_;
 
 };
