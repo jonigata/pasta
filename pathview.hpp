@@ -4,7 +4,7 @@
 	@file	  pathview.hpp
 	@brief	  <概要>
 
-	<説明>
+	ベクトルグラフィックスからGPUで扱いやすい中間表現への変換
 */
 
 #ifndef PATHVIEW_HPP_

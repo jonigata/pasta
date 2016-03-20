@@ -1,42 +1,22 @@
 // 2009/01/29 Naoyuki Hirayama
 
-#include "renderer.hpp"
+#include "pathview_renderer.hpp"
 
 const int BEZIER_DIVISION = 8;
 const int DOT_DIVISION = 32;
 
 /*============================================================================
  *
- * class Renderer 
+ * class PathviewRenderer 
  *
  * 
  *
  *==========================================================================*/
-//<<<<<<<<<< Renderer
-
-//****************************************************************
-// get_zoom
-float Renderer::get_zoom() {
-    return float(zoom_) / ZOOM_DIVISION;
-}
-
-//****************************************************************
-// set_zoom
-void Renderer::set_zoom(float x) {
-    zoom_ = int(ZOOM_DIVISION * x);
-}
-
-//****************************************************************
-// add_delta_to_zoom
-void Renderer::add_delta_to_zoom(int delta) {
-    if (0 < zoom_ + delta) {
-        zoom_ += delta;
-    }
-}
+//<<<<<<<<<< PathviewRenderer
 
 //****************************************************************
 // render
-void Renderer::render(
+void PathviewRenderer::render(
     LPDIRECT3DDEVICE9               device,
     const std::vector<Primitive>&   primitives,
     int                             step) {
@@ -70,7 +50,7 @@ void Renderer::render(
 
 //----------------------------------------------------------------
 // draw_primitives
-void Renderer::draw_primitives(
+void PathviewRenderer::draw_primitives(
     const std::vector<Primitive>&   primitives,
     int                             step,
     vertex_type*&                   v0,
@@ -95,19 +75,19 @@ void Renderer::draw_primitives(
                 cursor = vec2(a);
                 break;
             case Primitive::LineTo:
-                v0[0].p = vec4(offmag(cursor));
+                v0[0].p = vec4(cursor);
                 v0[0].c = color;
-                v0[1].p = vec4(offmag(vec2(a)));
+                v0[1].p = vec4(vec2(a));
                 v0[1].c = color;
                 v0 += 2;
                 cursor = vec2(a);
                 break;
             case Primitive::Triangle:
-                v1[0].p = vec4(offmag(cursor));
+                v1[0].p = vec4(cursor);
                 v1[0].c = color;
-                v1[1].p = vec4(offmag(vec2(a + 0)));
+                v1[1].p = vec4(vec2(a + 0));
                 v1[1].c = color;
-                v1[2].p = vec4(offmag(vec2(a + 2)));
+                v1[2].p = vec4(vec2(a + 2));
                 v1[2].c = color;
                 v1 += 3;
                 break;
@@ -127,9 +107,9 @@ void Renderer::draw_primitives(
                     float x1 = cosf(t1)* r;
                     float y1 = sinf(t1)* r;
 
-                    v0[0].p = vec4(offmag(c + D3DXVECTOR2(x0, y0)));
+                    v0[0].p = vec4(c + D3DXVECTOR2(x0, y0));
                     v0[0].c = color;
-                    v0[1].p = vec4(offmag(c + D3DXVECTOR2(x1, y1)));
+                    v0[1].p = vec4(c + D3DXVECTOR2(x1, y1));
                     v0[1].c = color;
                     v0 += 2;
                 }
@@ -142,5 +122,5 @@ void Renderer::draw_primitives(
     }
 }
 
-//>>>>>>>>>> Renderer
+//>>>>>>>>>> PathviewRenderer
 
