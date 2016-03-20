@@ -36,6 +36,9 @@ public:
         return d * (speed_ / D3DXVec2Length(&d));
     }
 
+    void update(float elpased) {
+    }
+
 private:
     Vector  target_;
     float   speed_;

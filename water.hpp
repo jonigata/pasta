@@ -39,6 +39,8 @@ public:
 
     virtual Vector constraint_velocity(const Vector&) = 0;
     virtual Vector move(const Vector&) = 0;
+
+    virtual void update(float elapsed) = 0;
 };
 
 struct WaterTraits {

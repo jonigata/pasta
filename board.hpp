@@ -15,7 +15,9 @@
 #include "gci.hpp"
 #include "pathview.hpp"
 #include "color.hpp"
+#include "castle.hpp"
 #include "standard_partawn.hpp"
+#include "station.hpp"
 #include <memory>
 
 const int HCOUNT				   = 10;
@@ -31,11 +33,21 @@ public:
         read_gci("data/cave.gci", terrain_);
         compile_terrain(terrain());
         // mockup();
+
         ready_ = true;
     }
 
-    void update() {
+    void update(float elapsed) {
         water_.update();
+
+        for (auto& s: stations_) {
+            s->update(elapsed);
+        }
+
+        Castle::EmitEntry e;
+        while (castle_.fetch(e)) {
+            settle_partawn(e.origin, e.target);
+        }
     }
 
     bool ready() { return ready_; }
@@ -50,6 +62,13 @@ public:
 
 public: 
     // player operation
+    void settle_station(const Vector& v, const Vector& target) {
+        auto p = std::make_shared<Station>(castle_, v, target, 25.0f);
+        partawns_.push_back(p);
+        water_.add(v, MASS, p.get());
+        stations_.push_back(p);
+    }
+
     void settle_partawn(const Vector& v, const Vector& target) {
         auto p = std::make_shared<StandardPartawn>(target, 25.0f);
         partawns_.push_back(p);
@@ -139,13 +158,13 @@ private:
         TrapezoidalMapMachine<float, SegmentProperty>&      tmm_;
     };
 
+    gci::Document terrain_;
     TrapezoidalMap<float, SegmentProperty> tm_;
-
-    Water     water_;
     TrapezoidalMapMachine<float, SegmentProperty> tmm_;
     TrapezoidalMapConstraint constraint_;
 
-    gci::Document terrain_;
+    Castle      castle_;
+    Water       water_;
 
     bool ready_;
 
@@ -314,6 +333,7 @@ private:
     }
 
     std::vector<std::shared_ptr<IPartawn>> partawns_;
+    std::vector<std::shared_ptr<Station>> stations_;
 
 private:
     void mockup() {

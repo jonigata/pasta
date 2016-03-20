@@ -116,6 +116,7 @@
     <ClCompile Include="..\water.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\castle.hpp" />
     <ClInclude Include="..\color.hpp" />
     <ClInclude Include="..\read_svg.hpp" />
     <ClInclude Include="..\water.hpp" />

@@ -15,7 +15,7 @@ public:
     Player(Board& board) : board_(board) {}
 
     void tap(const Vector& v) {
-        board_.settle_partawn(v, Vector(0, 0));
+        board_.settle_station(v, Vector(256, -256));
     }
 
 

@@ -84,7 +84,7 @@ public:
     void on_timer(int elapsed0, float elapsed1) {
         d3d_user::on_timer(elapsed0, elapsed1);
         if (auto_update_ || click_) {
-            board_.update();
+            board_.update(elapsed1);
             //window.invalidate();
             click_ = false;
         }
