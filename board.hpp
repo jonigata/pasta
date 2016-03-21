@@ -87,9 +87,11 @@ public:
         TeamTag team_tag, const Vector& origin, const Vector& target) {
         auto t = team(team_tag);
         if (0.2f <= t->energy()) {
-            t->energy(t->energy() - 0.2f);
-            auto p = t->settle_station(origin, target);
-            water_.add(origin, MASS, p.get());
+            if (constraint_.apply(origin) == origin) {
+                t->energy(t->energy() - 0.2f);
+                auto p = t->settle_station(origin, target);
+                water_.add(origin, MASS, p.get());
+            }
         }
     }
 

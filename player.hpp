@@ -16,8 +16,12 @@ public:
 
     void tap(const Vector& v) {
         auto team = board_.team(TeamTag::Alpha);
+        auto enemy = board_.team(TeamTag::Beta);
         if (team->in_teritory(v)) {
-            board_.settle_station(TeamTag::Alpha, v, Vector(448, 64));
+            board_.settle_station(
+                TeamTag::Alpha,
+                v,
+                enemy->find_nearest_station(v)->location());
         }
     }
 

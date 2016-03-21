@@ -168,11 +168,18 @@ void Water::update() {
             [this](const Vector& v){return constraint_->apply(v);});
         //pc.print("constraint");
     }
+ 
+    sph_.foreach_pair(
+        [](IPartawn* car, IPartawn* cdr, float distance) {
+            if (car->team_tag() != cdr->team_tag()) {
+                car->preattack();
+                cdr->preattack();
+            }
+        });
 
     sph_.foreach_pair(
         [](IPartawn* car, IPartawn* cdr, float distance) {
             if (car->team_tag() != cdr->team_tag()) {
-                dprintf_real("distance %f\n", distance);
                 car->attack(0.01f, cdr);
                 cdr->attack(0.01f, car);
             }

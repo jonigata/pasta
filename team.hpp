@@ -84,6 +84,18 @@ public:
     float energy() {return energy_;}
     void energy(float x) { energy_ = x; }
 
+    std::shared_ptr<IPartawn>
+    find_nearest_station(const Vector &v) {
+        return *std::min_element(
+            stations_.begin(),
+            stations_.end(),
+            [=](std::shared_ptr<IPartawn> car, std::shared_ptr<IPartawn> cdr) {
+                auto d0 = car->location() - v;
+                auto d1 = cdr->location() - v;
+                return D3DXVec2Length(&d0) < D3DXVec2Length(&d1);
+            });
+    }
+
 private:
     Castle& castle_;
     TeamTag team_tag_;

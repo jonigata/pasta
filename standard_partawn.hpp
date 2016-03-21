@@ -33,7 +33,7 @@ public:
     }
 
     Vector move(const Vector& p) {
-        if (attacking_) { attacking_ = false; return Vector(0,0); }
+        if (0 < attack_count_) { attack_count_ = 0; return Vector(0,0); }
         Vector d = target_ - p;
         return d * (speed_ / D3DXVec2Length(&d));
     }
@@ -42,16 +42,19 @@ public:
         life_ -= 0.1f * elapsed;
     }
 
+    void preattack() {
+        attack_count_++;
+    }
+
     void attack(float elapsed, IPartawn* target) {
-        target->suffer_damage(elapsed * 1.0f);
-        attacking_ = true;
+        target->suffer_damage(elapsed * 1.0f / attack_count_);
     }
 
 
 private:
     Vector  target_;
     float   speed_;
-    bool    attacking_;
+    int     attack_count_;
 
 };
 
