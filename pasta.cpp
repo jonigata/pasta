@@ -21,6 +21,8 @@
 #include "player.hpp"
 #include "ai.hpp"
 
+#include "life_bar.hpp"
+
 ////////////////////////////////////////////////////////////////
 // main window
 typedef zw::win::basic_window<
@@ -89,6 +91,8 @@ public:
             ai_.think(elapsed1);
             //window.invalidate();
             click_ = false;
+
+            life_bar_.set_value(board_.team(TeamTag::Alpha)->energy());
         }
     }
 
@@ -100,6 +104,7 @@ public:
 
     void on_render(LPDIRECT3DDEVICE9 device) {
         board_renderer_.render(device);
+        life_bar_.render(device);
     }
 
 public:
@@ -117,6 +122,8 @@ private:
     BoardRenderer board_renderer_;
     Player player_;
     Ai ai_;
+
+    LifeBar life_bar_;
 
 };
 

@@ -32,7 +32,15 @@ public:
         float    boundariness,
         const WaterTraits::load_type& load) {
 
-        DWORD c = D3DCOLOR_ARGB(int(load->life() * 255), 16, 0, 255);
+        DWORD c = 0;
+        switch (load->team_tag()) {
+            case TeamTag::Alpha:
+                c = D3DCOLOR_ARGB(int(load->life() * 255), 16, 0, 255);
+                break;
+            case TeamTag::Beta:
+                c = D3DCOLOR_ARGB(int(load->life() * 255), 224, 0, 255);
+                break;
+        }
 
         Vector sx(DOT_SIZE, 0);
         Vector sy(0, DOT_SIZE);

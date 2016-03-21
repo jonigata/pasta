@@ -85,24 +85,18 @@ public:
 
     void settle_station(
         TeamTag team_tag, const Vector& origin, const Vector& target) {
-        auto p = team(team_tag)->settle_station(origin, target);
-        water_.add(origin, MASS, p.get());
+        auto t = team(team_tag);
+        if (0.2f <= t->energy()) {
+            t->energy(t->energy() - 0.2f);
+            auto p = t->settle_station(origin, target);
+            water_.add(origin, MASS, p.get());
+        }
     }
 
     void settle_partawn(
         TeamTag team_tag, const Vector& origin, const Vector& target) {
         auto p = team(team_tag)->settle_partawn(origin, target);
         water_.add(origin, MASS, p.get());
-    }
-
-    bool in_teritory(TeamTag team_tag, const Vector& v) {
-        for (auto& s: team(team_tag)->stations()) {
-            Vector d = s->location() - v;
-            if (D3DXVec2Length(&d) < 50.0f) {
-                return true;
-            }
-        }
-        return false;
     }
 
 public:

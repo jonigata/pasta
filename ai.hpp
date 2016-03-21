@@ -19,7 +19,8 @@ public:
     void think(float elapsed) {
         if (rand() % 10 < 1) {
             Vector v(rand() % 512, rand() % 512);
-            if (board_.in_teritory(TeamTag::Beta, v)) {
+            auto team = board_.team(TeamTag::Beta);
+            if (team->in_teritory(v)) {
                 board_.settle_station(TeamTag::Beta, v, Vector(64, 448));
             }
         }

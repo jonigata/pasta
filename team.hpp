@@ -19,12 +19,17 @@ public:
         team_tag_ = team_tag;
         partawns_.push_back(basecamp);
         stations_.push_back(basecamp);
+
+        energy_ = 0.5f;
     }
 
     void update(float elapsed) {
         for (auto& p: partawns_) {
             p->update(elapsed);
         }
+        
+        energy_ += 0.025f * elapsed;
+        energy_ = (std::min)(energy_, 1.0f);
     }
 
     void cleanup() {
@@ -62,10 +67,22 @@ public:
     std::shared_ptr<IPartawn>
     settle_partawn(const Vector& origin, const Vector& target) {
         auto p = std::make_shared<StandardPartawn>(team_tag_, target, 25.0f);
-        dprintf_real("team: %d\n", team_tag_);
         partawns_.push_back(p);
         return p;
     }
+
+    bool in_teritory(const Vector& v) {
+        for (auto& s: stations_) {
+            Vector d = s->location() - v;
+            if (D3DXVec2Length(&d) < 50.0f) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    float energy() {return energy_;}
+    void energy(float x) { energy_ = x; }
 
 private:
     Castle& castle_;
@@ -73,6 +90,8 @@ private:
     std::vector<std::shared_ptr<IPartawn>> partawns_;
     std::vector<std::shared_ptr<IPartawn>> stations_;
 
+    float energy_;
+    
 };
 
 
