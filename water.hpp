@@ -45,6 +45,7 @@ public:
     virtual float life() = 0;
     virtual TeamTag team_tag() = 0;
     virtual void attack(float, IPartawn*) = 0;
+    virtual void suffer_damage(float) = 0;
 
     virtual void update(float elapsed) = 0;
 };
@@ -142,6 +143,9 @@ public:
     TeamTag team_tag() { return team_tag_; }
 
     void attack(float, IPartawn*) {}
+    void suffer_damage(float damage) {
+        life_ -= damage;
+    }
 
 protected:
     TeamTag team_tag_;

@@ -41,6 +41,11 @@ public:
         life_ -= 0.1f * elapsed;
     }
 
+    void attack(float elapsed, IPartawn* target) {
+        target->suffer_damage(elapsed * 10.0f);
+    }
+
+
 private:
     Vector  target_;
     float   speed_;

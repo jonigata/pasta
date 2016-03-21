@@ -162,8 +162,9 @@ void Water::update() {
     }
 
     sph_.foreach_pair(
-        [](IPartawn* car, IPartawn* cdr) {
+        [](IPartawn* car, IPartawn* cdr, float distance) {
             if (car->team_tag() != cdr->team_tag()) {
+                dprintf_real("distance %f\n", distance);
                 car->attack(0.01f, cdr);
                 cdr->attack(0.01f, car);
             }

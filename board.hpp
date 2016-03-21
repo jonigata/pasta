@@ -85,8 +85,6 @@ public:
 
     void settle_station(
         TeamTag team_tag, const Vector& origin, const Vector& target) {
-        dprintf_real("A %f, %f\n", origin.x, origin.y);
-        dprintf_real("A %f, %f\n", target.x, target.y);
         auto p = team(team_tag)->settle_station(origin, target);
         water_.add(origin, MASS, p.get());
     }

@@ -222,7 +222,7 @@ public:
     template <class F>
     void foreach_pair(F f) {
         for (Pair& p: pairs_) {
-            f(p.car->load, p.cdr->load);
+            f(p.car->load, p.cdr->load, p.length);
         }
     }
 	
