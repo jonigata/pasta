@@ -18,6 +18,7 @@
 #include "castle.hpp"
 #include "standard_partawn.hpp"
 #include "station.hpp"
+#include "basecamp.hpp"
 #include <memory>
 
 const int HCOUNT				   = 10;
@@ -34,15 +35,40 @@ public:
         compile_terrain(terrain());
         // mockup();
 
+        {
+            // ‹’“_
+            Vector v(64,448);
+            auto p = std::make_shared<Basecamp>(castle_, v);
+            partawns_.push_back(p);
+            water_.add(v, MASS, p.get());
+            basecamp_ = p;
+        }
+
         ready_ = true;
     }
 
     void update(float elapsed) {
+        for (auto& p: partawns_) {
+            p->update(elapsed);
+        }
+
         water_.update();
 
-        for (auto& s: stations_) {
-            s->update(elapsed);
-        }
+        partawns_.erase(
+            std::remove_if(
+                partawns_.begin(),
+                partawns_.end(),
+                [](auto p) {
+                    return p->life() < 0.0f;
+                }),
+            partawns_.end());
+
+        stations_.erase(
+            std::remove_if(
+                stations_.begin(),
+                stations_.end(),
+                [](auto p) { return p->life() < 0.0f; }),
+            stations_.end());
 
         Castle::EmitEntry e;
         while (castle_.fetch(e)) {
@@ -60,13 +86,20 @@ public:
 
     Water& water() { return water_; }
 
+    std::shared_ptr<Basecamp> basecamp() { return basecamp_; }
+    const std::vector<std::shared_ptr<Station>>& stations() { 
+        return stations_;
+    }
+
+
 public: 
     // player operation
     void settle_station(const Vector& v, const Vector& target) {
         auto p = std::make_shared<Station>(castle_, v, target, 25.0f);
         partawns_.push_back(p);
-        water_.add(v, MASS, p.get());
         stations_.push_back(p);
+        water_.add(v, MASS, p.get());
+        dprintf_real("settle: %p\n", p.get());
     }
 
     void settle_partawn(const Vector& v, const Vector& target) {
@@ -334,6 +367,7 @@ private:
 
     std::vector<std::shared_ptr<IPartawn>> partawns_;
     std::vector<std::shared_ptr<Station>> stations_;
+    std::shared_ptr<Basecamp> basecamp_;
 
 private:
     void mockup() {

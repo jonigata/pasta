@@ -12,7 +12,7 @@
 
 #include "water.hpp"
 
-class StandardPartawn : public IPartawn {
+class StandardPartawn : public TrivialPartawn {
 public:
     StandardPartawn(const Vector& target, float speed) {
         target_ = target;
@@ -36,7 +36,8 @@ public:
         return d * (speed_ / D3DXVec2Length(&d));
     }
 
-    void update(float elpased) {
+    void update(float elapsed) {
+        life_ -= 0.1f * elapsed;
     }
 
 private:

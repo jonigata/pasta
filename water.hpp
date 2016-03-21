@@ -39,6 +39,8 @@ public:
 
     virtual Vector constraint_velocity(const Vector&) = 0;
     virtual Vector move(const Vector&) = 0;
+    virtual void location(const Vector&) = 0;
+    virtual float life() = 0;
 
     virtual void update(float elapsed) = 0;
 };
@@ -120,6 +122,32 @@ public:
 private:
     sph::sph<WaterTraits> sph_;
     IConstraint*     constraint_;
+
+};
+
+class TrivialPartawn : public IPartawn {
+public:
+    TrivialPartawn() { life_ = 1.0f; }
+
+    void location(const Vector& v) { location_ = v; }
+    const Vector& location() { return location_; }
+
+    void life(float x) { life_ = x; }
+    float life() { return life_; }
+
+protected:
+    Vector  location_;
+    float   life_;
+};
+
+class ImmovablePartawn : public TrivialPartawn {
+public:
+    ImmovablePartawn(const Vector& origin) {
+        location(origin);
+    }
+
+    Vector constraint_velocity(const Vector& av) { return Vector(0, 0); }
+    Vector move(const Vector& p) { return Vector(0, 0); }
 
 };
 

@@ -31,11 +31,8 @@ public:
         float    density_repulsive_corrected,
         float    boundariness,
         const WaterTraits::load_type& load) {
-        DWORD c;
-        int cc = boundariness <1.0f ? 16 : 255;
-        if (255 <cc) { cc = 255; }
-        //cc = 255;
-        c = D3DCOLOR_ARGB(64, cc, 0, 255);
+
+        DWORD c = D3DCOLOR_ARGB(int(load->life() * 255), 16, 0, 255);
 
         Vector sx(DOT_SIZE, 0);
         Vector sy(0, DOT_SIZE);
@@ -154,22 +151,20 @@ void Water::render(LPDIRECT3DDEVICE9 device) {
 //****************************************************************
 // update
 void Water::update() {
-    PerformanceCounter pc(true);
+    //PerformanceCounter pc(true);
     sph_.update(0.01f);
-    pc.print("update");
-
-    struct ApplyConstraint {
-        ApplyConstraint(IConstraint* c) : c_(c) {}
-        IConstraint* c_;
-        Vector operator()(const Vector& v) const {
-            return c_->apply(v);
-        }
-    };
+    //pc.print("update");
 
     if (constraint_) {
-        sph_.constraint(ApplyConstraint(constraint_));
-        pc.print("constraint");
+        sph_.constraint(
+            [this](const Vector& v){return constraint_->apply(v);});
+        //pc.print("constraint");
     }
+
+    sph_.discard(
+        [](IPartawn* load) {
+            return load->life() < 0.0f;
+        });
 }
 
 //****************************************************************
