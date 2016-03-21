@@ -161,6 +161,14 @@ void Water::update() {
         //pc.print("constraint");
     }
 
+    sph_.foreach_pair(
+        [](IPartawn* car, IPartawn* cdr) {
+            if (car->team_tag() != cdr->team_tag()) {
+                car->attack(0.01f, cdr);
+                cdr->attack(0.01f, car);
+            }
+        });
+
     sph_.discard(
         [](IPartawn* load) {
             return load->life() < 0.0f;

@@ -10,11 +10,13 @@
 #ifndef CASTLE_HPP_
 #define CASTLE_HPP_
 
+#include "team_tag.hpp"
 #include <deque>
 
 class Castle {
 public:
     struct EmitEntry {
+        TeamTag team_tag;
         Vector origin;
         Vector target;
     };

@@ -11,15 +11,17 @@
 #define STATION_HPP_
 
 #include "castle.hpp"
+#include "team_tag.hpp"
 
 class Station : public ImmovablePartawn {
 public:
     Station(
+        TeamTag team_tag,
         Castle& castle, 
         const Vector& origin, 
         const Vector& target, 
         float speed)
-        : castle_(castle), ImmovablePartawn(origin) {
+        : ImmovablePartawn(team_tag, origin), castle_(castle)  {
         target_ = target;
         speed_ = speed;
         timer_ = 1.0f;
@@ -29,7 +31,7 @@ public:
         timer_ -= elapsed;
         if (timer_ <= 0) {
             timer_ = 1.0f;
-            castle_.emit(Castle::EmitEntry { location_, target_ });
+            castle_.emit(Castle::EmitEntry { team_tag_, location_, target_ });
         }
         life_ -= 0.01f * elapsed;
     }

@@ -185,8 +185,7 @@ public:
 
     template <class F>
     void foreach(F f) {
-        for (size_t i = 0 ; i <particles_.size(); i++) {
-            Particle& p = particles_[i];
+        for (Particle& p: particles_) {
             f(
                 p.id,
                 p.new_position * src_search_radius_,
@@ -203,11 +202,27 @@ public:
     void constraint(F f) {
         real_type i_src_search_radius = real_type(1)/ src_search_radius_;
 
-        for (size_t i = 0 ; i <particles_.size(); i++) {
-            Particle& p = particles_[i];
+        for (Particle& p: particles_) {
             p.new_position =
                 f(p.new_position * src_search_radius_)
                 * i_src_search_radius;
+        }
+    }
+
+    template <class F>
+    void discard(F f) {
+        particles_.erase(
+            std::remove_if(
+                particles_.begin(),
+                particles_.end(),
+                [&](const Particle& p){ return f(p.load); }),
+            particles_.end());
+    }
+
+    template <class F>
+    void foreach_pair(F f) {
+        for (Pair& p: pairs_) {
+            f(p.car->load, p.cdr->load);
         }
     }
 	

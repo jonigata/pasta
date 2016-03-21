@@ -14,7 +14,8 @@
 
 class StandardPartawn : public TrivialPartawn {
 public:
-    StandardPartawn(const Vector& target, float speed) {
+    StandardPartawn(TeamTag team_tag, const Vector& target, float speed)
+        : TrivialPartawn(team_tag){
         target_ = target;
         speed_ = speed;
     }

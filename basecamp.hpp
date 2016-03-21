@@ -14,8 +14,8 @@
 
 class Basecamp : public ImmovablePartawn {
 public:
-    Basecamp(Castle& castle, const Vector& origin)
-        : castle_(castle), ImmovablePartawn(origin) {
+    Basecamp(TeamTag team_tag, Castle& castle, const Vector& origin)
+        : ImmovablePartawn(team_tag, origin), castle_(castle) {
     }
 
     void update(float elapsed) {}

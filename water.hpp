@@ -14,6 +14,7 @@
 #include <boost/ref.hpp>
 #include "sph.hpp"
 #include "vector.hpp"
+#include "team_tag.hpp"
 
 const float INITIAL_DISTANCE	   = 10.0f;	// 1cm(10mm)ä‘äuÇÃäiéqÇçÏÇÈ
 const float DT                     = 0.01f;	// 100ÉtÉåÅ[ÉÄ/s
@@ -39,8 +40,11 @@ public:
 
     virtual Vector constraint_velocity(const Vector&) = 0;
     virtual Vector move(const Vector&) = 0;
+    virtual Vector location() = 0;
     virtual void location(const Vector&) = 0;
     virtual float life() = 0;
+    virtual TeamTag team_tag() = 0;
+    virtual void attack(float, IPartawn*) = 0;
 
     virtual void update(float elapsed) = 0;
 };
@@ -127,22 +131,29 @@ private:
 
 class TrivialPartawn : public IPartawn {
 public:
-    TrivialPartawn() { life_ = 1.0f; }
+    TrivialPartawn(TeamTag team_tag) : team_tag_(team_tag) { life_ = 1.0f; }
 
     void location(const Vector& v) { location_ = v; }
-    const Vector& location() { return location_; }
+    Vector location() { return location_; }
 
     void life(float x) { life_ = x; }
     float life() { return life_; }
 
+    TeamTag team_tag() { return team_tag_; }
+
+    void attack(float, IPartawn*) {}
+
 protected:
+    TeamTag team_tag_;
     Vector  location_;
     float   life_;
+    
 };
 
 class ImmovablePartawn : public TrivialPartawn {
 public:
-    ImmovablePartawn(const Vector& origin) {
+    ImmovablePartawn(TeamTag team_tag, const Vector& origin)
+        : TrivialPartawn(team_tag) {
         location(origin);
     }
 

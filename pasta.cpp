@@ -19,6 +19,7 @@
 #include "board_renderer.hpp"
 #include "gci.hpp"
 #include "player.hpp"
+#include "ai.hpp"
 
 ////////////////////////////////////////////////////////////////
 // main window
@@ -38,8 +39,8 @@ class application
     typedef window_user<application, window_type> window_user_type;
 
 public:
-    application() : board_renderer_(board_), player_(board_) {
-        auto_update_ = false;
+    application() : board_renderer_(board_), player_(board_), ai_(board_) {
+        auto_update_ = true;
         click_ = false;
 
         dragging_ = false;
@@ -85,6 +86,7 @@ public:
         d3d_user::on_timer(elapsed0, elapsed1);
         if (auto_update_ || click_) {
             board_.update(elapsed1);
+            ai_.think(elapsed1);
             //window.invalidate();
             click_ = false;
         }
@@ -114,6 +116,7 @@ private:
     Board board_;
     BoardRenderer board_renderer_;
     Player player_;
+    Ai ai_;
 
 };
 

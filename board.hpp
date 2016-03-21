@@ -19,6 +19,7 @@
 #include "standard_partawn.hpp"
 #include "station.hpp"
 #include "basecamp.hpp"
+#include "team.hpp"
 #include <memory>
 
 const int HCOUNT				   = 10;
@@ -35,44 +36,25 @@ public:
         compile_terrain(terrain());
         // mockup();
 
-        {
-            // ‹’“_
-            Vector v(64,448);
-            auto p = std::make_shared<Basecamp>(castle_, v);
-            partawns_.push_back(p);
-            water_.add(v, MASS, p.get());
-            basecamp_ = p;
-        }
-
+        teams_.push_back(build_team(TeamTag::Alpha, Vector(64, 448)));
+        teams_.push_back(build_team(TeamTag::Beta, Vector(448, 64)));
         ready_ = true;
     }
 
     void update(float elapsed) {
-        for (auto& p: partawns_) {
-            p->update(elapsed);
+        for (const auto& team: teams_) {
+            team->update(elapsed);
         }
 
         water_.update();
 
-        partawns_.erase(
-            std::remove_if(
-                partawns_.begin(),
-                partawns_.end(),
-                [](auto p) {
-                    return p->life() < 0.0f;
-                }),
-            partawns_.end());
-
-        stations_.erase(
-            std::remove_if(
-                stations_.begin(),
-                stations_.end(),
-                [](auto p) { return p->life() < 0.0f; }),
-            stations_.end());
+        for (const auto& team: teams_) {
+            team->cleanup();
+        }
 
         Castle::EmitEntry e;
         while (castle_.fetch(e)) {
-            settle_partawn(e.origin, e.target);
+            settle_partawn(e.team_tag, e.origin, e.target);
         }
     }
 
@@ -86,28 +68,45 @@ public:
 
     Water& water() { return water_; }
 
-    std::shared_ptr<Basecamp> basecamp() { return basecamp_; }
-    const std::vector<std::shared_ptr<Station>>& stations() { 
-        return stations_;
-    }
-
-
 public: 
     // player operation
-    void settle_station(const Vector& v, const Vector& target) {
-        auto p = std::make_shared<Station>(castle_, v, target, 25.0f);
-        partawns_.push_back(p);
-        stations_.push_back(p);
-        water_.add(v, MASS, p.get());
-        dprintf_real("settle: %p\n", p.get());
+    std::shared_ptr<Team>
+    build_team(TeamTag team_tag, const Vector& v) {
+        // ‹’“_
+        auto basecamp = std::make_shared<Basecamp>(team_tag, castle_, v);
+        water_.add(v, MASS, basecamp.get());
+
+        auto team = std::make_shared<Team>(castle_, team_tag, basecamp);
+        return team;
     }
 
-    void settle_partawn(const Vector& v, const Vector& target) {
-        auto p = std::make_shared<StandardPartawn>(target, 25.0f);
-        partawns_.push_back(p);
-        water_.add(v, MASS, p.get());
+    std::shared_ptr<Team>
+    team(TeamTag tag) { return teams_[(int)tag]; }        
+
+    void settle_station(
+        TeamTag team_tag, const Vector& origin, const Vector& target) {
+        dprintf_real("A %f, %f\n", origin.x, origin.y);
+        dprintf_real("A %f, %f\n", target.x, target.y);
+        auto p = team(team_tag)->settle_station(origin, target);
+        water_.add(origin, MASS, p.get());
     }
-    
+
+    void settle_partawn(
+        TeamTag team_tag, const Vector& origin, const Vector& target) {
+        auto p = team(team_tag)->settle_partawn(origin, target);
+        water_.add(origin, MASS, p.get());
+    }
+
+    bool in_teritory(TeamTag team_tag, const Vector& v) {
+        for (auto& s: team(team_tag)->stations()) {
+            Vector d = s->location() - v;
+            if (D3DXVec2Length(&d) < 50.0f) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 public:
     struct SegmentProperty {
         int upper_cell_index;
@@ -365,22 +364,12 @@ private:
         pb.push_back(p);
     }
 
-    std::vector<std::shared_ptr<IPartawn>> partawns_;
-    std::vector<std::shared_ptr<Station>> stations_;
-    std::shared_ptr<Basecamp> basecamp_;
-
 private:
     void mockup() {
-        for (int y = 0 ; y <VCOUNT ; y++) {
-            for (int x = 0 ; x <HCOUNT ; x++) {
-                water_.add(
-                    Vector(256.0f, 256.0f)+ 
-                    Vector(float(-HCOUNT/2+x), float(-VCOUNT/2+y))*INITIAL_DISTANCE,
-                    MASS,
-                    nullptr);
-            }
-        }
     }
+
+private:
+    std::vector<std::shared_ptr<Team>> teams_;
 
 };
 
